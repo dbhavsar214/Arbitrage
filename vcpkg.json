@@ -1,6 +1,6 @@
 {
   "dependencies": [
-    "fmt",
-    "sqlite3"
+    
+    "mysql-connector-cpp"
   ]
 }
