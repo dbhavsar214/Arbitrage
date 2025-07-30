@@ -1,7 +1,4 @@
-﻿# CMakeList.txt : CMake project for Arbitrage1, include source and define
-# project specific logic here.
-#
-cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required (VERSION 3.8)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -11,11 +8,15 @@ endif()
 
 project ("Arbitrage1")
 
+# Find the packages
+find_package(unofficial-mysql-connector-cpp CONFIG REQUIRED)
+
 # Add source to this project's executable.
-add_executable (Arbitrage1 "Arbitrage1.cpp" "Arbitrage1.h")
+add_executable (Arbitrage1 "Arbitrage1.cpp" "Arbitrage1.h" "DBConnection.cpp" "DBConnection.h")
+
+# Link the libraries
+target_link_libraries(Arbitrage1 PRIVATE unofficial::mysql-connector-cpp::connector)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET Arbitrage1 PROPERTY CXX_STANDARD 20)
 endif()
-
-# TODO: Add tests and install targets if needed.
