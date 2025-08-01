@@ -10,12 +10,18 @@ project ("Arbitrage1")
 
 # Find the packages
 find_package(unofficial-mysql-connector-cpp CONFIG REQUIRED)
+find_package(libwebsockets CONFIG REQUIRED)
+ 
+
+
 
 # Add source to this project's executable.
-add_executable (Arbitrage1 "Arbitrage1.cpp" "Arbitrage1.h" "DBConnection.cpp" "DBConnection.h")
+add_executable (Arbitrage1 "Arbitrage1.cpp" "Arbitrage1.h" "DBConnection.cpp" "DBConnection.h" "WSConnection.h" "WSConnection.cpp")
 
 # Link the libraries
-target_link_libraries(Arbitrage1 PRIVATE unofficial::mysql-connector-cpp::connector)
+target_link_libraries(Arbitrage1
+	PRIVATE unofficial::mysql-connector-cpp::connector
+	PRIVATE websockets_shared)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET Arbitrage1 PROPERTY CXX_STANDARD 20)
