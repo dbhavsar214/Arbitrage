@@ -1,6 +1,7 @@
 {
   "dependencies": [
     "libwebsockets",
-    "mysql-connector-cpp"
+    "mysql-connector-cpp",
+    "nlohmann-json"
   ]
 }

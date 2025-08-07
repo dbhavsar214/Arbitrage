@@ -16,7 +16,7 @@ find_package(libwebsockets CONFIG REQUIRED)
 
 
 # Add source to this project's executable.
-add_executable (Arbitrage1 "Arbitrage1.cpp" "Arbitrage1.h" "DBConnection.cpp" "DBConnection.h" "WSConnection.h" "WSConnection.cpp")
+add_executable (Arbitrage1 "Arbitrage1.cpp" "Arbitrage1.h" "DBConnection.cpp" "DBConnection.h" "WSConnection.h" "WSConnection.cpp" "GlobalQuotes.h" "GlobalQuotes.cpp" "Quote.h" "ArbitrageEngine.h" "ArbitrageEngine.cpp" )
 
 # Link the libraries
 target_link_libraries(Arbitrage1

@@ -3,39 +3,43 @@
 #include "WSConnection.h"
 #include <string>
 #include <iostream>
+#include <thread>
+#include <vector>
 
 using namespace std;
 
-int main()
-{
+void connectToExchange(int port) {
+    WSConnection ws;
+    try {
+        if (ws.setConnection(port)) {
+            cout << "[INFO] WebSocket connected to port " << port << endl;
+        }
+    }
+    catch (const exception& e) {
+        cerr << "[ERROR] Exception on port " << port << ": " << e.what() << endl;
+    }
+}
+
+int main() {
     string user = "root";
     string database = "Arbitrage";
     string host = "localhost";
     string password = "Bhavsar%408780";
     unsigned int port = 33060;
-    string NASDAQ = "ws://localhost:1001";
     DBConnection db(host, user, password, database, port);
-    WSConnection ws(NASDAQ);
-    
 
-   /* try {
-        if (db.connect()) {
-            cout << "Connection Successfull";
+    vector<int> ports = { 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009 };
+
+    vector<thread> threads;
+    for (int port : ports) {
+        threads.emplace_back(thread(connectToExchange, port));
+    }
+
+    for (auto& t : threads) {
+        if (t.joinable()) {
+            t.join();  // Optional: block forever since setConnection runs infinite loop
         }
     }
-    catch (const exception& e) {
-        cerr << "[Main] Standard Exception: " << e.what() << endl;
-    }*/
 
-
-    try {
-        cout << "Trying weB sOCKET COnnection";
-        if (ws.setConnection()) {
-            cout << "Web Socket Connection Successfull";
-        }
-    }
-    catch (const exception& e) {
-        cerr << "[Main] Standard Exception: " << e.what() << endl;
-    }
-
+    return 0;
 }

@@ -1,10 +1,15 @@
 ﻿#include "WSConnection.h"
+#include "ArbitrageEngine.h"
+#include "Quote.h"
+
 #include <libwebsockets.h>
+#include <nlohmann/json.hpp> 
 #include <iostream>
 #include <cstring>
 #include <csignal>
 
 static volatile bool interrupted = false;
+ArbitrageEngine Ae(9);
 
 // Signal handler
 static void signal_handler(int sig) {
@@ -15,18 +20,36 @@ static void signal_handler(int sig) {
 static int callback_client(struct lws* wsi, enum lws_callback_reasons reason,
     void* user, void* in, size_t len) {
     switch (reason) {
-    case LWS_CALLBACK_CLIENT_ESTABLISHED:
-        std::cout << "Client connected to server!" << std::endl;
-        break;
+    case LWS_CALLBACK_CLIENT_ESTABLISHED : {
+            std::cout << "Client connected to server!" << std::endl;
+            break;
+        }
 
-    case LWS_CALLBACK_CLIENT_RECEIVE:
-        std::cout << "Message from server: " << std::string((const char*)in, len) << std::endl;
-        break;
+    case LWS_CALLBACK_CLIENT_RECEIVE : {
+               std::string msg((const char*)in, len);
 
-    case LWS_CALLBACK_CLIENT_CLOSED:
-        std::cout << "Connection closed by server." << std::endl;
-        interrupted = true;
-        break;
+            try {
+                // Parse JSON from message
+                auto j = nlohmann::json::parse(msg);
+
+                std::string exch = j.at("exchange").get<std::string>();
+                 double price = j.at("p").get<double>();
+
+                Quote qt{price, exch};
+                Ae.receiveQuote(exch, qt);
+
+            } catch (const std::exception& e) {
+                std::cerr << "JSON parse error or missing field: " << e.what() << "\n";
+            }
+
+            break;
+        }
+
+    case LWS_CALLBACK_CLIENT_CLOSED : {
+                std::cout << "Connection closed by server." << std::endl;
+                interrupted = true;
+                break;
+        }
 
     default:
         break;
@@ -42,11 +65,11 @@ static struct lws_protocols protocols[] = {
     { nullptr, nullptr, 0, 0 }
 };
 
-WSConnection::WSConnection(const std::string& exAddress)
-    : exAddress_(exAddress), context_(nullptr), wsi_(nullptr) {
+WSConnection::WSConnection()
+    :context_(nullptr), wsi_(nullptr) {
 }
 
-bool WSConnection::setConnection() {
+bool WSConnection::setConnection(int port) {
     signal(SIGINT, signal_handler); // Handle Ctrl+C
 
     lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE, nullptr);
@@ -67,11 +90,11 @@ bool WSConnection::setConnection() {
     struct lws_client_connect_info ccinfo = {};
     ccinfo.context = context_;
     ccinfo.address = "localhost";             // Set your actual server address
-    ccinfo.port = 1001;                       // Port number
+    ccinfo.port = port;                       // Port number
     ccinfo.path = "/";
     ccinfo.host = lws_canonical_hostname(context_);
     ccinfo.origin = "origin";
-    ccinfo.protocol = "ws-client-protocol";
+    ccinfo.protocol = nullptr;
     ccinfo.ssl_connection = 0;
 
     wsi_ = lws_client_connect_via_info(&ccinfo);
