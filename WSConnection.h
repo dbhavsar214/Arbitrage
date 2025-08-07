@@ -6,11 +6,10 @@
 
 class WSConnection {
 public:
-    explicit WSConnection(const std::string& exAddress);
-    bool setConnection();
+    explicit WSConnection();
+    bool setConnection(int port);
 
 private:
-    std::string exAddress_;
     struct lws_context* context_;
     struct lws* wsi_;
 };
